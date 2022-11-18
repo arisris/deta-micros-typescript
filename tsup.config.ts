@@ -1,14 +1,15 @@
+import { config } from "dotenv";
 import { defineConfig } from "tsup";
 import path from "path";
 import { execa } from "execa";
 import { readFile, writeFile } from "fs/promises";
 
-const microsPath = path.join(__dirname, "micros");
-
-const serverDistPath = path.join(microsPath, "server"),
+const microsPath = path.join(__dirname, "micros"),
+  serverDistPath = path.join(microsPath, "server"),
   publicDistPath = path.join(microsPath, "public"),
   publicPath = path.join(__dirname, "public");
 
+config();
 export default defineConfig(async ({ platform, watch, ...options }) => {
   const isNode = platform === "node";
   if (!watch) {
@@ -35,7 +36,10 @@ export default defineConfig(async ({ platform, watch, ...options }) => {
     platform,
     async onSuccess() {
       if (watch && isNode) {
-        const proc = execa("node", ["."], { cwd: microsPath });
+        const proc = execa("node", ["."], {
+          cwd: microsPath,
+          env: process.env,
+        });
         proc.stdout?.pipe(process.stdout);
         return () => {
           proc.kill();
